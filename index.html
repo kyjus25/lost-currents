@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Hydro Thunder 3D</title>
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js"
+  }
+}
+</script>
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var el = document.getElementById('loading-screen');
+    if (el) { el.style.opacity = '0'; setTimeout(function() { el.style.display = 'none'; }, 600); }
+  }, 5000);
+});
+</script>
+</head>
+<body>
+<div id="loading-screen">
+  <div id="loading-title">HYDRO THUNDER</div>
+  <div id="loading-spinner"></div>
+  <div id="loading-text">Loading assets...</div>
+</div>
+<canvas id="hud-canvas"></canvas>
+<script src="js/audio.js"></script>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>
