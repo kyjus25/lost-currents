@@ -4,7 +4,7 @@ import { mkBoat } from './boats';
 
 var _thumbRen = null;
 
-export function buildBoatThumbnails() {
+export const buildBoatThumbnails = () => {
   if (!_thumbRen) {
     _thumbRen = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     _thumbRen.setPixelRatio(2);

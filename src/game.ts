@@ -9,13 +9,16 @@ import { updateAI } from './ai';
 import { drawHUD } from './hud';
 import { buildBoatThumbnails } from './thumbnails';
 import { initFishing, startFishing, updateFishing, buyRod, buyUpgrade, unlockAchievement, RODS, UPGRADES, FISH, getCompletion, rarityColor } from './fishing';
+import { createPostProcessing } from './postprocessing';
+import { createDebugTools } from './debug';
+import { createPhysicsWorld } from './physics';
 
-function hide() {
+const hide = () => {
   const e = document.getElementById('loading-screen');
   if (e) { e.style.opacity = '0'; setTimeout(() => e.style.display = 'none', 600); }
 }
 
-function init() {
+const init = () => {
   G.hudEl = document.getElementById('hud-canvas');
   G.hudCtx = G.hudEl.getContext('2d');
 
@@ -36,6 +39,10 @@ function init() {
   G.ren.setClearColor(0x87CEEB, 1);
   document.body.prepend(G.ren.domElement);
 
+  G.pp = createPostProcessing(G.ren, G.scene, G.cam);
+  G.debug = createDebugTools();
+  G.physics = createPhysicsWorld();
+
   G.audio = new HydroAudio();
   G.audio.init();
   initFishing();
@@ -47,6 +54,7 @@ function init() {
     G.cam.aspect = innerWidth / innerHeight;
     G.cam.updateProjectionMatrix();
     G.ren.setSize(innerWidth, innerHeight);
+    if (G.pp) G.pp.resize(innerWidth, innerHeight);
   });
 
   buildTrack();
@@ -85,7 +93,7 @@ function init() {
   requestAnimationFrame(loop);
 }
 
-function startRace(cfg) {
+const startRace = (cfg) => {
   G.pBoat = mkBoatState(cfg, 0, 0, 0, true);
   G.aiList = [];
   const aiPool = BOATS.filter((_, i) => i !== G.boatIdx);
@@ -105,7 +113,7 @@ function startRace(cfg) {
   G.audio.stopMusic();
 }
 
-function spawnUnderwaterLoot() {
+const spawnUnderwaterLoot = () => {
   G.underwaterLoot = [];
   const lootTypes = [
     { name: 'Gold Nugget', value: 75, color: '#ffcc00' },
@@ -133,19 +141,37 @@ function spawnUnderwaterLoot() {
   }
 }
 
-function loop(ts) {
+const loop = (ts) => {
   const dt = Math.min((ts - G.lastTime) / 1000, 0.05);
   G.lastTime = ts;
   update(dt);
-  G.ren.render(G.scene, G.cam);
+  if (G.pp) {
+    G.pp.render(dt);
+  } else {
+    G.ren.render(G.scene, G.cam);
+  }
   drawHUD();
+  if (G.debug) G.debug.update();
   for (const k in G.keys) G.prev[k] = G.keys[k];
   requestAnimationFrame(loop);
 }
 
-function update(dt) {
+const update = (dt) => {
   const time = performance.now() * 0.001;
   if (G.displayBoats) G.displayBoats.forEach(b => { b.visible = false; });
+
+  if (kp('F3')) {
+    if (G.debug) G.debug.toggle();
+  }
+
+  const isUnderwater = (G.state === 'FREE_ROAM' && G.diving) || G.state === 'IRON_LUNG';
+  if (G.pp) {
+    G.pp.setUnderwater(isUnderwater ? (G.state === 'IRON_LUNG' ? 0.8 : 0.4) : 0,
+      G.state === 'IRON_LUNG' ? new THREE.Color(0x330000) : new THREE.Color(0x003355));
+    G.pp.setBloomStrength(G.state === 'IRON_LUNG' ? 0.5 : 0.3);
+  }
+
+  if (G.physics) G.physics.update(dt);
 
   switch (G.state) {
     case 'MENU':

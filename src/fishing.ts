@@ -55,7 +55,7 @@ export const ACHIEVEMENTS = [
 const RARITY_W = { common: 50, uncommon: 25, rare: 10, legendary: 2 };
 export const RARITY_COLORS = { common: '#aaaaaa', uncommon: '#44cc44', rare: '#4488ff', legendary: '#ffaa00' };
 
-export function initFishing() {
+export const initFishing = () => {
   G.fishing = {
     coins: 0,
     ownedRods: [0],
@@ -85,7 +85,7 @@ export function initFishing() {
   };
 }
 
-export function unlockAchievement(id) {
+export const unlockAchievement = (id) => {
   if (!G.achievements) G.achievements = {};
   if (!G.achievements[id]) {
     G.achievements[id] = true;
@@ -97,7 +97,7 @@ export function unlockAchievement(id) {
   }
 }
 
-export function startFishing() {
+export const startFishing = () => {
   const f = G.fishing;
   if (f.state !== 'idle') return;
   if (f.tank.length >= f.tankCapacity) {
@@ -115,7 +115,7 @@ export function startFishing() {
   f.message = 'Casting line...';
 }
 
-export function updateFishing(dt) {
+export const updateFishing = (dt) => {
   const f = G.fishing;
   if (f.messageTimer > 0) { f.messageTimer -= dt; if (f.messageTimer <= 0) f.message = ''; }
 
@@ -217,7 +217,7 @@ export function updateFishing(dt) {
   }
 }
 
-function pickFish(luck) {
+const pickFish = (luck) => {
   const pool = FISH.map(f => {
     const base = RARITY_W[f.rarity] || 1;
     return f.rarity === 'rare' ? base + luck * 20 : f.rarity === 'legendary' ? base + luck * 12 : base;
@@ -228,7 +228,7 @@ function pickFish(luck) {
   return FISH[0];
 }
 
-export function buyRod(id) {
+export const buyRod = (id) => {
   const rod = RODS[id];
   const f = G.fishing;
   if (f.ownedRods.includes(id)) { f.equippedRod = id; return true; }
@@ -241,7 +241,7 @@ export function buyRod(id) {
   return false;
 }
 
-export function buyUpgrade(id) {
+export const buyUpgrade = (id) => {
   const up = UPGRADES[id];
   const f = G.fishing;
   if (f.ownedUpgrades.includes(id)) return false;
@@ -255,8 +255,8 @@ export function buyUpgrade(id) {
   return false;
 }
 
-export function getCompletion() {
+export const getCompletion = () => {
   return Math.round((Object.keys(G.fishing.caughtFish).length / FISH.length) * 100);
 }
 
-export function rarityColor(r) { return RARITY_COLORS[r] || '#fff'; }
+export const rarityColor = (r) => { return RARITY_COLORS[r] || '#fff'; }

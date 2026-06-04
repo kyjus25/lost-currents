@@ -56,4 +56,4 @@ export const G: Record<string, any> = {
   achievements: {}
 };
 
-export function kp(k) { return G.keys[k] && !G.prev[k]; }
+export const kp = (k) => { return G.keys[k] && !G.prev[k]; }

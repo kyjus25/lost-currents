@@ -1,7 +1,7 @@
 import { G, BOATS } from './shared';
 import { RODS, UPGRADES, FISH, ACHIEVEMENTS, getCompletion, rarityColor } from './fishing';
 
-export function drawHUD() {
+export const drawHUD = () => {
   const dpr = devicePixelRatio || 1;
   G.hudEl.width = innerWidth * dpr;
   G.hudEl.height = innerHeight * dpr;
@@ -24,7 +24,7 @@ export function drawHUD() {
   else if (G.state === 'UPDATES') drawUpdates(c, innerWidth, innerHeight);
 }
 
-function drawMenu(c, w, h) {
+const drawMenu = (c, w, h) => {
   const p = 0.5 + 0.5 * Math.sin(performance.now() * 0.003);
   c.shadowColor = 'rgba(0,150,255,0.6)';
   c.shadowBlur = 30;
@@ -58,7 +58,7 @@ function drawMenu(c, w, h) {
   }
 }
 
-function drawSelect(c, w, h) {
+const drawSelect = (c, w, h) => {
   c.fillStyle = 'rgba(0,20,40,0.85)';
   c.fillRect(0, 0, w, h);
   c.fillStyle = '#ffffff';
@@ -127,7 +127,7 @@ function drawSelect(c, w, h) {
   c.fillText('\u2190 \u2191 \u2192 \u2193 Select  |  ENTER Confirm', w / 2, h * 0.95);
 }
 
-function drawCount(c, w, h) {
+const drawCount = (c, w, h) => {
   if (G.countVal < 0) return;
   const disp = G.countVal > 0 ? String(G.countVal) : 'GO!';
   let a = 1;
@@ -147,7 +147,7 @@ function drawCount(c, w, h) {
   c.restore();
 }
 
-function drawRace(c, w, h) {
+const drawRace = (c, w, h) => {
   if (!G.pBoat) return;
   const p = G.pBoat;
   const sf = p.speed / p.maxSpd;
@@ -244,7 +244,7 @@ function drawRace(c, w, h) {
   if (G.state === 'RESULTS') drawResults(c, w, h);
 }
 
-function drawResults(c, w, h) {
+const drawResults = (c, w, h) => {
   c.fillStyle = 'rgba(0,10,20,0.85)';
   c.fillRect(0, 0, w, h);
   c.shadowColor = 'rgba(0,150,255,0.5)';
@@ -287,7 +287,7 @@ function drawResults(c, w, h) {
   c.globalAlpha = 1;
 }
 
-function drawFreeRoam(c, w, h) {
+const drawFreeRoam = (c, w, h) => {
   const f = G.fishing;
   const rod = RODS[f.equippedRod];
 
@@ -399,7 +399,7 @@ function drawFreeRoam(c, w, h) {
   }
 }
 
-function drawShop(c, w, h) {
+const drawShop = (c, w, h) => {
   c.fillStyle = 'rgba(0,20,40,0.92)';
   c.fillRect(0, 0, w, h);
 
@@ -482,7 +482,7 @@ function drawShop(c, w, h) {
   c.fillText('\u2191\u2193 Navigate  |  TAB Switch  |  ENTER Buy/Equip  |  B Close', w / 2, h - 15);
 }
 
-function drawDex(c, w, h) {
+const drawDex = (c, w, h) => {
   c.fillStyle = 'rgba(0,20,40,0.92)';
   c.fillRect(0, 0, w, h);
 
@@ -561,7 +561,7 @@ function drawDex(c, w, h) {
   c.fillText('\u2191\u2193 Scroll  |  D Close', w / 2, h - 15);
 }
 
-function drawIronLung(c, w, h) {
+const drawIronLung = (c, w, h) => {
   c.fillStyle = 'rgba(200,0,0,0.15)';
   c.fillRect(0, 0, w, h);
 
@@ -645,7 +645,7 @@ function drawIronLung(c, w, h) {
   c.fillText('WASD: Move  |  Space/Shift: Up/Down  |  X: X-Ray  |  ESC: Exit', w / 2, h - 15);
 }
 
-function drawAchievements(c, w, h) {
+const drawAchievements = (c, w, h) => {
   c.fillStyle = 'rgba(0,20,40,0.92)';
   c.fillRect(0, 0, w, h);
 
@@ -684,7 +684,7 @@ function drawAchievements(c, w, h) {
   c.fillText('A Close', w / 2, h - 15);
 }
 
-function drawUpdates(c, w, h) {
+const drawUpdates = (c, w, h) => {
   c.fillStyle = 'rgba(0,20,40,0.92)';
   c.fillRect(0, 0, w, h);
 

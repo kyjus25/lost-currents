@@ -3,7 +3,7 @@ import { TW, TSEG } from './shared';
 import { G } from './shared';
 import { updateBoat } from './boats';
 
-export function updateAI(b, dt) {
+export const updateAI = (b, dt) => {
   if (b.finished) return;
 
   const prevIdx = Math.floor((b._trackT || 0) * TSEG) % TSEG;

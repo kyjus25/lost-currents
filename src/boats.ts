@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { TW, TSEG } from './shared';
 import { G } from './shared';
 
-export function mkBoat(color, accent, nozzles, finScale, hullType) {
+export const mkBoat = (color, accent, nozzles, finScale, hullType) => {
   nozzles = nozzles || 3;
   finScale = finScale || 1.0;
   hullType = hullType || 'standard';
@@ -275,7 +275,7 @@ export function mkBoat(color, accent, nozzles, finScale, hullType) {
   return group;
 }
 
-export function mkFishingBoat() {
+export const mkFishingBoat = () => {
   const group = new THREE.Group();
   group.rotation.order = 'YXZ';
 
@@ -413,7 +413,7 @@ export function mkFishingBoat() {
   return group;
 }
 
-export function syncBoat(b) {
+export const syncBoat = (b) => {
   const waveY = waterHeightAt(b.pos.x, b.pos.z);
   b.pos.y = waveY + 0.5;
 
@@ -435,7 +435,7 @@ export function syncBoat(b) {
   b.mesh.rotation.z = roll * 0.6 + Math.sin(performance.now() * 0.003) * 0.04 * spdNorm;
 }
 
-export function updateBoat(b, dt) {
+export const updateBoat = (b, dt) => {
   if (b.finished) return null;
   if (b.colTimer > 0) b.colTimer -= dt;
 
@@ -540,7 +540,7 @@ export function updateBoat(b, dt) {
   return null;
 }
 
-export function syncMesh(b) {
+export const syncMesh = (b) => {
   const pos = b.pos.clone();
 
   const waveY = waterHeightAt(pos.x, pos.z);
@@ -587,7 +587,7 @@ export function syncMesh(b) {
   });
 }
 
-export function mkBoatState(cfg, t, lat, spd, isPlayer) {
+export const mkBoatState = (cfg, t, lat, spd, isPlayer) => {
   const mesh = mkBoat(cfg.color, cfg.accent, cfg.nozzles, cfg.finScale, cfg.hull);
   G.scene.add(mesh);
 
@@ -614,7 +614,7 @@ export function mkBoatState(cfg, t, lat, spd, isPlayer) {
   };
 }
 
-export function updatePontoonBoat(b, dt) {
+export const updatePontoonBoat = (b, dt) => {
   if (b.throttle > 0) {
     b.speed += (b.throttle * b.maxSpd - b.speed) * (1 - Math.exp(-b.accel * dt));
   } else if (b.throttle < 0) {
@@ -631,7 +631,7 @@ export function updatePontoonBoat(b, dt) {
   b.pos.z += fwd.z * b.speed * dt;
 }
 
-export function mkDiver() {
+export const mkDiver = () => {
   const group = new THREE.Group();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2a, roughness: 0.6, metalness: 0.2 });
   const skinMat = new THREE.MeshStandardMaterial({ color: 0xddaa88, roughness: 0.7 });
@@ -684,7 +684,7 @@ export function mkDiver() {
   return group;
 }
 
-function findClosestTrackPoint(pos) {
+const findClosestTrackPoint = (pos) => {
   let bestDist = Infinity, bestIdx = 0;
   const step = 20;
   for (let i = 0; i < TSEG; i += step) {
@@ -701,14 +701,14 @@ function findClosestTrackPoint(pos) {
   return { pos: G.trackPts[bestIdx].pos, idx: bestIdx, t: bestIdx / TSEG, dist: bestDist };
 }
 
-function getTrackElevation(t) {
+const getTrackElevation = (t) => {
   const idx = Math.floor(t * TSEG) % TSEG;
   const next = (idx + 1) % TSEG;
   const frac = (t * TSEG) % 1;
   return G.trackPts[idx].pos.y + (G.trackPts[next].pos.y - G.trackPts[idx].pos.y) * frac;
 }
 
-function waterHeightAt(x, z) {
+const waterHeightAt = (x, z) => {
   const time = performance.now() * 0.001;
   return Math.sin(x * 0.008 + time * 0.5) * 1.5
     + Math.sin(z * 0.012 + time * 0.4) * 1.2

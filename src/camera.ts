@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { G } from './shared';
 
-export function updateCamera(b, dt) {
+export const updateCamera = (b, dt) => {
   const boatPos = b.pos.clone();
   boatPos.y += 1.5;
   const fwd = new THREE.Vector3(Math.cos(b.heading), 0, -Math.sin(b.heading));

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { TW, TSEG, WSIZE } from './shared';
 import { G } from './shared';
 
-export function buildWater() {
+export const buildWater = () => {
   G.waterGeo = new THREE.PlaneGeometry(WSIZE, WSIZE, 120, 120);
   G.waterGeo.rotateX(-Math.PI / 2);
   const mat = new THREE.MeshStandardMaterial({
@@ -19,7 +19,7 @@ export function buildWater() {
   G.scene.add(G.waterMesh);
 }
 
-export function buildSky() {
+export const buildSky = () => {
   const geo = new THREE.SphereGeometry(1, 48, 36);
   const positions = geo.attributes.position;
   const colors = new Float32Array(positions.count * 3);
@@ -59,7 +59,7 @@ export function buildSky() {
   G.scene.add(sky);
 }
 
-export function buildClouds() {
+export const buildClouds = () => {
   for (let i = 0; i < 60; i++) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -95,7 +95,7 @@ export function buildClouds() {
   }
 }
 
-export function buildTerrain() {
+export const buildTerrain = () => {
   const cliffGeo = new THREE.BoxGeometry(1);
   const cliffColors = [0x7a5a2a, 0x6a4a1a, 0x8a6a3a, 0x5a3a0a];
 
@@ -153,7 +153,7 @@ export function buildTerrain() {
   G.racingMeshes.push(floor);
 }
 
-export function buildLights() {
+export const buildLights = () => {
   G.scene.add(new THREE.AmbientLight(0x99ccee, 0.5));
   const sun = new THREE.DirectionalLight(0xfff4e0, 2.0);
   sun.position.set(300, 400, 200);
@@ -170,7 +170,7 @@ export function buildLights() {
   G.scene.add(new THREE.HemisphereLight(0x88ccff, 0x44aa44, 0.7));
 }
 
-export function buildSun() {
+export const buildSun = () => {
   const sunGeo = new THREE.SphereGeometry(20, 20, 20);
   const sunMat = new THREE.MeshBasicMaterial({ color: 0xffff88 });
   const sunMesh = new THREE.Mesh(sunGeo, sunMat);
@@ -184,7 +184,7 @@ export function buildSun() {
   G.scene.add(glow);
 }
 
-export function updateWater() {
+export const updateWater = () => {
   const pos = G.waterGeo.attributes.position;
   const time = performance.now() * 0.001;
   for (let i = 0; i < pos.count; i++) {
@@ -200,7 +200,7 @@ export function updateWater() {
   G.waterGeo.computeVertexNormals();
 }
 
-export function updateBoosts(time) {
+export const updateBoosts = (time) => {
   G.boostObjs.forEach(p => {
     if (p.userData.collected) return;
     p.position.y = p.userData.baseY + Math.sin(time * 3 + p.userData.idx * 0.5) * 0.8;
@@ -209,14 +209,14 @@ export function updateBoosts(time) {
   });
 }
 
-export function updateClouds(time) {
+export const updateClouds = (time) => {
   G.cloudMeshes.forEach((c, i) => {
     c.position.x += Math.sin(time * 0.1 + i) * 0.03;
     c.position.z += Math.cos(time * 0.08 + i * 0.7) * 0.03;
   });
 }
 
-export function buildIslands() {
+export const buildIslands = () => {
   G.islands = [];
   const data = [
     { x: 200, z: 200, s: 12 }, { x: -300, z: 350, s: 9 }, { x: 500, z: -150, s: 14 },
@@ -261,7 +261,7 @@ export function buildIslands() {
   });
 }
 
-export function mkMegalodon() {
+export const mkMegalodon = () => {
   const g = new THREE.Group();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0x445566, roughness: 0.4, metalness: 0.3 });
   const bellyMat = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.5 });
@@ -321,7 +321,7 @@ export function mkMegalodon() {
   return g;
 }
 
-export function spawnMegalodon(boatPos) {
+export const spawnMegalodon = (boatPos) => {
   if (G.megalodon) return;
   const meg = mkMegalodon();
   const angle = Math.random() * Math.PI * 2;
@@ -341,7 +341,7 @@ export function spawnMegalodon(boatPos) {
   G.megalodon = meg;
 }
 
-export function updateMegalodon(dt) {
+export const updateMegalodon = (dt) => {
   if (!G.megalodon) return;
   const m = G.megalodon;
   m.userData.timer -= dt;
@@ -357,12 +357,12 @@ export function updateMegalodon(dt) {
   m.rotation.z = Math.sin(m.userData.wobble * 0.7) * 0.08;
 }
 
-export function setOceanMode(enabled) {
+export const setOceanMode = (enabled) => {
   if (G.racingMeshes) G.racingMeshes.forEach(m => { m.visible = !enabled; });
   if (G.cliffMeshes) G.cliffMeshes.forEach(m => { m.visible = !enabled; });
 }
 
-export function buildOceanFloor() {
+export const buildOceanFloor = () => {
   G.oceanFloor = new THREE.Group();
   G.hasMegalodonSkeleton = false;
   G.megalodonSkeletonPos = null;
@@ -428,7 +428,7 @@ export function buildOceanFloor() {
   G.scene.add(G.oceanFloor);
 }
 
-function mkBone(mat) {
+const mkBone = (mat) => {
   const g = new THREE.Group();
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 1.8, 6), mat);
   g.add(shaft);
@@ -438,7 +438,7 @@ function mkBone(mat) {
   return g;
 }
 
-export function mkMegalodonSkeleton() {
+export const mkMegalodonSkeleton = () => {
   const g = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0xbbbbaa, roughness: 0.8 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x222222 });
@@ -480,7 +480,7 @@ export function mkMegalodonSkeleton() {
   return g;
 }
 
-export function mkGiantHand() {
+export const mkGiantHand = () => {
   const g = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0x666655, roughness: 0.6, metalness: 0.2 });
   const fmat = new THREE.MeshStandardMaterial({ color: 0x777766, roughness: 0.6, metalness: 0.2 });
@@ -504,7 +504,7 @@ export function mkGiantHand() {
   return g;
 }
 
-export function spawnGiantHand(diverPos) {
+export const spawnGiantHand = (diverPos) => {
   if (G.giantHand) return;
   const hand = mkGiantHand();
   hand.position.set(diverPos.x + (Math.random() - 0.5) * 6, -55, diverPos.z + (Math.random() - 0.5) * 6);
@@ -513,7 +513,7 @@ export function spawnGiantHand(diverPos) {
   G.giantHand = hand;
 }
 
-export function updateGiantHand(dt) {
+export const updateGiantHand = (dt) => {
   if (!G.giantHand) return null;
   const h = G.giantHand;
   h.userData.timer += dt;
@@ -538,7 +538,7 @@ export function updateGiantHand(dt) {
   return null;
 }
 
-export function mkSubmarine44() {
+export const mkSubmarine44 = () => {
   const g = new THREE.Group();
   const hullMat = new THREE.MeshStandardMaterial({ color: 0x445566, roughness: 0.4, metalness: 0.6 });
   const rustMat = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.7, metalness: 0.3 });
@@ -593,7 +593,7 @@ export function mkSubmarine44() {
   return g;
 }
 
-export function mkSubmarine() {
+export const mkSubmarine = () => {
   const g = new THREE.Group();
   const hullMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, roughness: 0.4, metalness: 0.7 });
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.8 });
@@ -658,7 +658,7 @@ export function mkSubmarine() {
   return g;
 }
 
-export function mkDetailedSubmarine() {
+export const mkDetailedSubmarine = () => {
   const g = new THREE.Group();
   const hullMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, roughness: 0.35, metalness: 0.75 });
   const hullLight = new THREE.MeshStandardMaterial({ color: 0x4a5a6a, roughness: 0.3, metalness: 0.7 });
@@ -903,7 +903,7 @@ export function mkDetailedSubmarine() {
   return g;
 }
 
-export function mkMonsterEel() {
+export const mkMonsterEel = () => {
   const g = new THREE.Group();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2a1a, roughness: 0.6, metalness: 0.2 });
   const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2.0 });

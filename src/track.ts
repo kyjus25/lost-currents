@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { TW, TSEG } from './shared';
 import { G } from './shared';
 
-export function buildTrack() {
+export const buildTrack = () => {
   const raw = [
     [0, 2, 120],
     [120, 4, 60],
@@ -73,7 +73,7 @@ export function buildTrack() {
   buildBoosts();
 }
 
-function buildWalls(halfW) {
+const buildWalls = (halfW) => {
   const wallH = 2.5;
   const positions = [];
   const indices = [];
@@ -108,7 +108,7 @@ function buildWalls(halfW) {
   }
 }
 
-function buildBoosts() {
+const buildBoosts = () => {
   G.boostObjs = [];
   for (let i = 0; i < TSEG; i++) {
     if (!G.trackSeg[i].boost) continue;
