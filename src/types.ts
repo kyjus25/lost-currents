@@ -207,6 +207,8 @@ export interface GameState {
   monsterEel: THREE.Group | null;
   eelSpawnTimer: number;
   eelFlashed: boolean;
+  eelPhase: string;
+  eelPhaseTimer: number;
   sub: THREE.Group | null;
   subHeading: number;
   xrayActive: boolean;

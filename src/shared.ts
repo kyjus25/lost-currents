@@ -53,7 +53,14 @@ export const G: Record<string, any> = {
   testingMode: false,
   freeCam: false,
   freeCamEuler: null,
-  achievements: {}
+  achievements: {},
+  pp: null,
+  debug: null,
+  physics: null,
+  waterMaterial: null,
+  eelPhase: 'approach',
+  eelPhaseTimer: 0,
+  camZoomDist: 10,
 };
 
 export const kp = (k) => { return G.keys[k] && !G.prev[k]; }

@@ -587,23 +587,37 @@ const drawIronLung = (c, w, h) => {
     c.textAlign = 'center';
     c.fillText('THE SKELETON IS ALIVE...', w / 2, h * 0.3);
   }
-  if (G.ironLungState === 'eaten') {
-    c.fillStyle = 'rgba(255,0,0,0.9)';
-    c.font = 'bold 28px Orbitron, monospace';
-    c.textAlign = 'center';
-    c.fillText('THE BEAST CONSUMED YOU', w / 2, h * 0.3);
-  }
 
   if (G.monsterEel) {
-    c.fillStyle = 'rgba(255,0,0,0.9)';
-    c.font = 'bold 22px Orbitron, monospace';
-    c.textAlign = 'center';
-    c.fillText('SOMETHING APPROACHES!', w / 2, h * 0.2);
-    c.font = '14px Rajdhani, sans-serif';
-    c.fillText('Press ANY KEY to flash the beast!', w / 2, h * 0.2 + 28);
+    if (G.eelPhase === 'approach') {
+      c.fillStyle = 'rgba(255,0,0,0.9)';
+      c.font = 'bold 22px Orbitron, monospace';
+      c.textAlign = 'center';
+      c.fillText('SOMETHING APPROACHES!', w / 2, h * 0.2);
+      c.font = '14px Rajdhani, sans-serif';
+      c.fillText('Press ANY KEY to flash the beast!', w / 2, h * 0.2 + 28);
+    } else if (G.eelPhase === 'lunge') {
+      c.fillStyle = 'rgba(255,0,0,0.95)';
+      c.font = 'bold 36px Orbitron, monospace';
+      c.textAlign = 'center';
+      c.fillText('IT\'S LUNGING!', w / 2, h * 0.3);
+    } else if (G.eelPhase === 'bite' || G.eelPhase === 'thrash') {
+      const intensity = Math.sin(performance.now() * 0.03) * 0.3 + 0.7;
+      c.fillStyle = `rgba(200,0,0,${intensity})`;
+      c.fillRect(0, 0, w, h);
+      c.fillStyle = '#ff0000';
+      c.shadowColor = '#ff0000';
+      c.shadowBlur = 60;
+      c.font = 'bold 80px Orbitron, monospace';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText('CHOMP', w / 2, h * 0.4);
+      c.shadowBlur = 0;
+      c.textBaseline = 'alphabetic';
+    }
   }
 
-  if (G.jumpscareTimer > 0) {
+  if (G.jumpscareTimer > 0 && G.eelPhase !== 'bite' && G.eelPhase !== 'thrash') {
     const jt = G.jumpscareTimer;
     const flash = Math.sin(jt * 20) * 0.3 + 0.5;
     c.fillStyle = `rgba(180,0,0,${flash})`;
@@ -612,21 +626,22 @@ const drawIronLung = (c, w, h) => {
     c.fillStyle = '#ff0000';
     c.shadowColor = '#ff0000';
     c.shadowBlur = 40;
-    c.font = 'bold 40px Orbitron, monospace';
+    c.font = 'bold 60px Orbitron, monospace';
     c.textAlign = 'center';
-    c.fillText('👀', w / 2 - 80, h * 0.35);
-    c.fillText('👀', w / 2 + 80, h * 0.35);
+    c.textBaseline = 'middle';
+    c.fillText('!!', w / 2, h * 0.4);
     c.shadowBlur = 0;
+    c.textBaseline = 'alphabetic';
+  }
 
-    c.fillStyle = 'rgba(255,255,255,0.9)';
-    c.font = 'bold 14px Orbitron, monospace';
-    c.fillText('Press ANY KEY to flash!', w / 2, h * 0.55);
-
+  if (G.jumpscareTimer > 0 || (G.eelPhase === 'bite' || G.eelPhase === 'thrash' || G.eelPhase === 'lunge')) {
+    const dpr = devicePixelRatio || 1;
     const shakeX = (Math.random() - 0.5) * 20;
     const shakeY = (Math.random() - 0.5) * 20;
-    c.setTransform(1, 0, 0, 1, shakeX, shakeY);
+    c.setTransform(dpr, 0, 0, dpr, shakeX, shakeY);
   } else {
-    c.setTransform(1, 0, 0, 1, 0, 0);
+    const dpr = devicePixelRatio || 1;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   if (G.xrayActive) {
@@ -636,10 +651,41 @@ const drawIronLung = (c, w, h) => {
     c.fillText('X-RAY ACTIVE', 20, 105);
   }
 
-  c.fillStyle = 'rgba(255,255,255,0.3)';
-  c.font = '11px Rajdhani, sans-serif';
-  c.textAlign = 'center';
-  c.fillText('WASD: Move  |  Space/Shift: Up/Down  |  X: X-Ray  |  ESC: Exit', w / 2, h - 15);
+  if (G.ironLungState !== 'eaten') {
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    c.font = '11px Rajdhani, sans-serif';
+    c.textAlign = 'center';
+    c.fillText('WASD: Move  |  Space/Shift: Up/Down  |  X: X-Ray  |  ESC: Exit', w / 2, h - 15);
+  }
+
+  if (G.ironLungState === 'eaten') {
+    const dpr = devicePixelRatio || 1;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    c.fillStyle = 'rgba(0,0,0,0.85)';
+    c.fillRect(0, 0, w, h);
+
+    const pulse = 0.8 + 0.2 * Math.sin(performance.now() * 0.004);
+
+    c.fillStyle = `rgba(200,0,0,${pulse})`;
+    c.shadowColor = '#ff0000';
+    c.shadowBlur = 80;
+    c.font = 'bold 120px Orbitron, monospace';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('WASTED', w / 2, h * 0.38);
+    c.shadowBlur = 0;
+
+    c.fillStyle = 'rgba(255,100,100,0.8)';
+    c.font = '18px Rajdhani, sans-serif';
+    c.fillText('THE BEAST CONSUMED YOUR SUBMARINE', w / 2, h * 0.52);
+
+    c.fillStyle = 'rgba(255,255,255,' + (0.5 + 0.3 * Math.sin(performance.now() * 0.003)) + ')';
+    c.font = '16px Rajdhani, sans-serif';
+    c.fillText('Press ENTER to return to menu', w / 2, h * 0.65);
+
+    c.textBaseline = 'alphabetic';
+  }
 }
 
 const drawAchievements = (c, w, h) => {

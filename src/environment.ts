@@ -403,6 +403,35 @@ export const buildOceanFloor = () => {
     G.megalodonSkeletonPos = skel.position.clone();
   }
 
+  if (Math.random() < 0.25) {
+    const whale = mkWhaleSkeleton();
+    whale.position.set((Math.random() - 0.5) * 700, -48, (Math.random() - 0.5) * 700);
+    whale.rotation.y = Math.random() * Math.PI * 2;
+    G.oceanFloor.add(whale);
+  }
+
+  if (Math.random() < 0.3) {
+    const fish = mkGiantFishSkeleton();
+    fish.position.set((Math.random() - 0.5) * 600, -49, (Math.random() - 0.5) * 600);
+    fish.rotation.y = Math.random() * Math.PI * 2;
+    G.oceanFloor.add(fish);
+  }
+
+  if (Math.random() < 0.2) {
+    const tentacle = mkKrakenTentacle();
+    tentacle.position.set((Math.random() - 0.5) * 500, -50, (Math.random() - 0.5) * 500);
+    tentacle.rotation.y = Math.random() * Math.PI * 2;
+    G.oceanFloor.add(tentacle);
+  }
+
+  if (Math.random() < 0.15) {
+    const wreck = mkShipwreck();
+    wreck.position.set((Math.random() - 0.5) * 600, -48, (Math.random() - 0.5) * 600);
+    wreck.rotation.y = Math.random() * Math.PI * 2;
+    wreck.rotation.z = (Math.random() - 0.5) * 0.3;
+    G.oceanFloor.add(wreck);
+  }
+
   if (Math.random() < 0.01) {
     const sub = mkSubmarine44();
     sub.position.set((Math.random() - 0.5) * 400, -47, (Math.random() - 0.5) * 400);
@@ -894,87 +923,140 @@ export const mkDetailedSubmarine = () => {
 export const mkMonsterEel = () => {
   const g = new THREE.Group();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a2a1a, roughness: 0.6, metalness: 0.2 });
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2.0 });
+  const bellyMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.7 });
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3.0 });
   const toothMat = new THREE.MeshStandardMaterial({ color: 0xeeeecc, roughness: 0.3 });
   const spikeMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.4, metalness: 0.6 });
+  const mouthMat = new THREE.MeshStandardMaterial({ color: 0x440000, roughness: 0.5 });
 
-  const segments = 25;
+  const segments = 35;
   for (let i = 0; i < segments; i++) {
     const t = i / segments;
-    const radius = 1.8 - Math.abs(t - 0.5) * 2.0;
-    const segGeo = new THREE.SphereGeometry(Math.max(0.5, radius), 8, 6);
-    const seg = new THREE.Mesh(segGeo, bodyMat);
-    seg.position.x = -i * 2.2;
-    seg.position.y = Math.sin(i * 0.4) * 0.8;
-    seg.scale.set(1, 0.7, 1);
+    const radius = 3.5 - Math.abs(t - 0.5) * 3.5;
+    const r = Math.max(1.0, radius);
+    const segGeo = new THREE.SphereGeometry(r, 10, 8);
+    const seg = new THREE.Mesh(segGeo, i < segments / 2 ? bodyMat : bellyMat);
+    seg.position.x = -i * 3.0;
+    seg.position.y = Math.sin(i * 0.35) * 1.2;
+    seg.scale.set(1, 0.65, 1);
     g.add(seg);
 
     if (i % 3 === 0 && i > 2 && i < segments - 3) {
-      const spikeGeo = new THREE.ConeGeometry(0.15, 1.5, 4);
+      const spikeGeo = new THREE.ConeGeometry(0.3, 2.5, 4);
       const spike = new THREE.Mesh(spikeGeo, spikeMat);
-      spike.position.set(-i * 2.2, radius * 0.7 + 0.7, 0);
+      spike.position.set(-i * 3.0, r * 0.65 + 1.2, 0);
       spike.rotation.z = Math.PI;
       g.add(spike);
     }
   }
 
-  const headGeo = new THREE.SphereGeometry(2.5, 12, 8);
-  headGeo.scale(1.8, 0.7, 0.9);
+  const jawGroup = new THREE.Group();
+  jawGroup.position.set(5, 0, 0);
+
+  const jawUpGeo = new THREE.SphereGeometry(4.5, 14, 10);
+  jawUpGeo.scale(2.0, 0.45, 1.1);
+  const jawUp = new THREE.Mesh(jawUpGeo, bodyMat);
+  jawUp.position.set(3, 1.5, 0);
+  jawGroup.add(jawUp);
+
+  const mouthRoof = new THREE.Mesh(
+    new THREE.SphereGeometry(3.5, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5),
+    mouthMat
+  );
+  mouthRoof.scale.set(1.8, 0.3, 1.0);
+  mouthRoof.position.set(4, 0.8, 0);
+  mouthRoof.rotation.x = Math.PI;
+  jawGroup.add(mouthRoof);
+
+  const jawDownGroup = new THREE.Group();
+  jawDownGroup.position.set(3, -0.5, 0);
+
+  const jawDownGeo = new THREE.SphereGeometry(4, 12, 10);
+  jawDownGeo.scale(1.8, 0.35, 1.0);
+  const jawDown = new THREE.Mesh(jawDownGeo, bellyMat);
+  jawDown.position.set(2, -1, 0);
+  jawDownGroup.add(jawDown);
+
+  const mouthFloor = new THREE.Mesh(
+    new THREE.SphereGeometry(3.2, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.5),
+    mouthMat
+  );
+  mouthFloor.scale.set(1.6, 0.25, 0.9);
+  mouthFloor.position.set(3, 0, 0);
+  jawDownGroup.add(mouthFloor);
+
+  for (let row = 0; row < 3; row++) {
+    for (let i = 0; i < 12; i++) {
+      const toothGeo = new THREE.ConeGeometry(0.15, 1.2, 4);
+      const tooth = new THREE.Mesh(toothGeo, toothMat);
+      tooth.position.set(1 + i * 0.45, 0.6 - row * 0.3, -1.2 + (i % 2) * 2.4);
+      tooth.rotation.z = Math.PI;
+      jawGroup.add(tooth);
+    }
+  }
+  for (let row = 0; row < 2; row++) {
+    for (let i = 0; i < 10; i++) {
+      const toothGeo = new THREE.ConeGeometry(0.12, 0.9, 4);
+      const tooth = new THREE.Mesh(toothGeo, toothMat);
+      tooth.position.set(1.5 + i * 0.45, 0.3 + row * 0.2, -1.0 + (i % 2) * 2.0);
+      jawDownGroup.add(tooth);
+    }
+  }
+
+  jawGroup.add(jawDownGroup);
+  g.add(jawGroup);
+
+  const headGeo = new THREE.SphereGeometry(5, 14, 10);
+  headGeo.scale(1.6, 0.7, 1.0);
   const head = new THREE.Mesh(headGeo, bodyMat);
   head.position.x = 3;
   g.add(head);
 
-  const jawUpGeo = new THREE.SphereGeometry(2, 10, 8);
-  jawUpGeo.scale(1.5, 0.3, 0.8);
-  const jawUp = new THREE.Mesh(jawUpGeo, bodyMat);
-  jawUp.position.set(4, 0.5, 0);
-  g.add(jawUp);
-
-  const jawDownGeo = new THREE.SphereGeometry(1.8, 10, 8);
-  jawDownGeo.scale(1.5, 0.25, 0.7);
-  const jawDown = new THREE.Mesh(jawDownGeo, bodyMat);
-  jawDown.position.set(4, -0.7, 0);
-  g.add(jawDown);
-
-  for (let i = 0; i < 8; i++) {
-    const toothGeo = new THREE.ConeGeometry(0.08, 0.5, 4);
-    const tooth = new THREE.Mesh(toothGeo, toothMat);
-    tooth.position.set(3.5 + i * 0.3, 0.2, -0.6 + (i % 2) * 1.2);
-    tooth.rotation.z = Math.PI;
-    g.add(tooth);
-  }
-  for (let i = 0; i < 8; i++) {
-    const toothGeo = new THREE.ConeGeometry(0.08, 0.5, 4);
-    const tooth = new THREE.Mesh(toothGeo, toothMat);
-    tooth.position.set(3.5 + i * 0.3, -0.4, -0.6 + (i % 2) * 1.2);
-    g.add(tooth);
-  }
-
   [-1, 1].forEach(z => {
-    const eyeGeo = new THREE.SphereGeometry(0.6, 10, 8);
+    const eyeGeo = new THREE.SphereGeometry(1.2, 12, 10);
     const eye = new THREE.Mesh(eyeGeo, eyeMat);
-    eye.position.set(4.5, 0.8, z * 1.5);
+    eye.position.set(7, 2.5, z * 3.5);
     g.add(eye);
-    const pupilGeo = new THREE.SphereGeometry(0.3, 8, 6);
+    const pupilGeo = new THREE.SphereGeometry(0.5, 8, 6);
     const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
     const pupil = new THREE.Mesh(pupilGeo, pupilMat);
-    pupil.position.set(4.8, 0.8, z * 1.5);
+    pupil.position.set(8, 2.5, z * 3.5);
     g.add(pupil);
+    const irisGeo = new THREE.TorusGeometry(0.7, 0.12, 6, 12);
+    const irisMat = new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff2200, emissiveIntensity: 1.5 });
+    const iris = new THREE.Mesh(irisGeo, irisMat);
+    iris.position.set(7.6, 2.5, z * 3.5);
+    iris.rotation.y = Math.PI / 2;
+    g.add(iris);
   });
 
-  const dorsalGeo = new THREE.ConeGeometry(2, 5, 6);
+  const dorsalGeo = new THREE.ConeGeometry(3.5, 8, 6);
   const dorsal = new THREE.Mesh(dorsalGeo, bodyMat);
-  dorsal.position.set(-8, 3, 0);
+  dorsal.position.set(-12, 5.5, 0);
   g.add(dorsal);
 
+  const dorsal2Geo = new THREE.ConeGeometry(2, 5, 5);
+  const dorsal2 = new THREE.Mesh(dorsal2Geo, bodyMat);
+  dorsal2.position.set(-20, 4, 0);
+  g.add(dorsal2);
+
   [-1, 1].forEach(z => {
-    const finGeo = new THREE.ConeGeometry(1.5, 4, 4);
+    const finGeo = new THREE.ConeGeometry(2.5, 6, 4);
     const fin = new THREE.Mesh(finGeo, bodyMat);
-    fin.position.set(-5, -0.5, z * 2);
-    fin.rotation.x = z * 0.5;
+    fin.position.set(-8, -1, z * 3.5);
+    fin.rotation.x = z * 0.6;
     g.add(fin);
   });
 
-  g.scale.set(2.5, 2.5, 2.5);
+  const tailGeo = new THREE.ConeGeometry(3, 6, 4);
+  tailGeo.rotateZ(Math.PI / 2);
+  const tail = new THREE.Mesh(tailGeo, bodyMat);
+  tail.position.x = -segments * 3.0;
+  g.add(tail);
+
+  g.scale.set(3, 3, 3);
+  g.userData.jawGroup = jawGroup;
+  g.userData.jawDownGroup = jawDownGroup;
+  g.userData.jawOpenAmount = 0;
   return g;
 }

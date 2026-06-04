@@ -50,6 +50,9 @@ const init = () => {
 
   document.addEventListener('keydown', e => { G.keys[e.key] = true; if (e.key === 'Enter' || e.key === ' ') e.preventDefault(); });
   document.addEventListener('keyup', e => { G.keys[e.key] = false; });
+  document.addEventListener('wheel', e => {
+    G.camZoomDist = Math.max(3, Math.min(40, G.camZoomDist + e.deltaY * 0.01));
+  }, { passive: true });
   addEventListener('resize', () => {
     G.cam.aspect = innerWidth / innerHeight;
     G.cam.updateProjectionMatrix();
@@ -602,54 +605,215 @@ const update = (dt) => {
         if (!G.monsterEel && G.eelSpawnTimer <= 0) {
           G.monsterEel = mkMonsterEel();
           const ea = Math.random() * Math.PI * 2;
-          G.monsterEel.position.set(G.sub.position.x + Math.cos(ea) * 60, G.sub.position.y, G.sub.position.z + Math.sin(ea) * 60);
+          G.monsterEel.position.set(G.sub.position.x + Math.cos(ea) * 80, G.sub.position.y, G.sub.position.z + Math.sin(ea) * 80);
           G.scene.add(G.monsterEel);
           G.eelFlashed = false;
+          G.eelPhase = 'approach';
+          G.eelPhaseTimer = 0;
           G.fishing.message = 'SOMETHING IS COMING...'; G.fishing.messageTimer = 3;
         }
 
         if (G.monsterEel) {
-          const ed = G.sub.position.distanceTo(G.monsterEel.position);
-          const dir = G.sub.position.clone().sub(G.monsterEel.position).normalize();
-          G.monsterEel.position.add(dir.multiplyScalar(12 * dt));
-          G.monsterEel.lookAt(G.sub.position);
-          G.monsterEel.position.y += Math.sin(performance.now() * 0.003) * 0.2;
+          const eel = G.monsterEel;
+          const ed = G.sub.position.distanceTo(eel.position);
+          const dir = G.sub.position.clone().sub(eel.position).normalize();
+          G.eelPhaseTimer += dt;
 
-          if (ed < 12 && !G.jumpscareTimer && !G.eelFlashed) {
-            G.jumpscareTimer = 1.5;
-            G.camShake = 3.0;
-            G.audio.sfx('crash');
-          }
+          if (G.eelPhase === 'approach') {
+            const speed = ed < 30 ? 18 : 12;
+            eel.position.add(dir.multiplyScalar(speed * dt));
+            eel.lookAt(G.sub.position);
+            eel.position.y += Math.sin(performance.now() * 0.003) * 0.3;
 
-          if (G.jumpscareTimer > 0) {
-            G.jumpscareTimer -= dt;
-            G.camShake = Math.max(G.camShake, 2.5);
-            if (G.jumpscareTimer <= 0) {
-              G.jumpscareTimer = 0;
+            if (eel.userData.jawDownGroup) {
+              const openTarget = ed < 20 ? 0.5 : 0.15;
+              eel.userData.jawOpenAmount += (openTarget - eel.userData.jawOpenAmount) * dt * 3;
+              eel.userData.jawDownGroup.rotation.x = eel.userData.jawOpenAmount;
             }
-          }
 
-          if (ed < 25 && !G.eelFlashed && G.jumpscareTimer <= 0) {
-            const anyKey = Object.keys(G.keys).some(k => G.keys[k] && k !== 'Escape' && k !== 'x' && k !== 'X');
-            if (anyKey) {
-              G.eelFlashed = true;
-              G.scene.remove(G.monsterEel); G.monsterEel = null;
-              G.fishing.message = 'YOU FLASHED THE BEAST!'; G.fishing.messageTimer = 3;
-              G.eelSpawnTimer = 20 + Math.random() * 30;
-              unlockAchievement('eel_flash');
+            if (ed < 12 && !G.jumpscareTimer && !G.eelFlashed) {
+              G.jumpscareTimer = 1.5;
+              G.camShake = 3.0;
+              G.audio.sfx('crash');
             }
-          }
-          if (ed < 5 && !G.eelFlashed) {
+
+            if (G.jumpscareTimer > 0) {
+              G.jumpscareTimer -= dt;
+              G.camShake = Math.max(G.camShake, 2.5);
+              if (G.jumpscareTimer <= 0) G.jumpscareTimer = 0;
+            }
+
+            if (ed < 25 && !G.eelFlashed && G.jumpscareTimer <= 0) {
+              const anyKey = Object.keys(G.keys).some(k => G.keys[k] && k !== 'Escape' && k !== 'x' && k !== 'X');
+              if (anyKey) {
+                G.eelFlashed = true;
+                G.scene.remove(eel); G.monsterEel = null;
+                G.fishing.message = 'YOU FLASHED THE BEAST!'; G.fishing.messageTimer = 3;
+                G.eelSpawnTimer = 20 + Math.random() * 30;
+                unlockAchievement('eel_flash');
+              }
+            }
+
+            if (ed < 6 && !G.eelFlashed) {
+              G.eelPhase = 'lunge';
+              G.eelPhaseTimer = 0;
+              G.camShake = 4.0;
+              G.audio.sfx('crash');
+            }
+          } else if (G.eelPhase === 'lunge') {
+            const lungeDir = G.sub.position.clone().sub(eel.position).normalize();
+            eel.position.add(lungeDir.multiplyScalar(35 * dt));
+            eel.lookAt(G.sub.position);
+
+            if (eel.userData.jawDownGroup) {
+              eel.userData.jawOpenAmount += (1.2 - eel.userData.jawOpenAmount) * dt * 8;
+              eel.userData.jawDownGroup.rotation.x = eel.userData.jawOpenAmount;
+            }
+
+            G.camShake = Math.max(G.camShake, 4.0);
+            G.jumpscareTimer = 0.5;
+
+            if (G.eelPhaseTimer > 0.4) {
+              G.eelPhase = 'bite';
+              G.eelPhaseTimer = 0;
+            }
+          } else if (G.eelPhase === 'bite') {
+            eel.position.lerp(G.sub.position, dt * 10);
+            eel.lookAt(G.sub.position);
+
+            if (eel.userData.jawDownGroup) {
+              eel.userData.jawOpenAmount += (0.0 - eel.userData.jawOpenAmount) * dt * 12;
+              eel.userData.jawDownGroup.rotation.x = eel.userData.jawOpenAmount;
+            }
+
+            if (G.sub && !G._explosionSpawned) {
+              G._explosionSpawned = true;
+              G._explosionPos = G.sub.position.clone();
+              G._debris = [];
+              const debrisColors = [0x888888, 0x666666, 0x445566, 0x3a4a5a, 0x222222, 0xff4400, 0xff8800];
+              for (let i = 0; i < 40; i++) {
+                const geo = Math.random() < 0.5
+                  ? new THREE.BoxGeometry(0.3 + Math.random() * 0.8, 0.2 + Math.random() * 0.5, 0.2 + Math.random() * 0.6)
+                  : new THREE.SphereGeometry(0.2 + Math.random() * 0.4, 6, 4);
+                const mat = new THREE.MeshStandardMaterial({
+                  color: debrisColors[Math.floor(Math.random() * debrisColors.length)],
+                  emissive: i < 8 ? 0xff4400 : 0x000000,
+                  emissiveIntensity: i < 8 ? 1.5 : 0,
+                  roughness: 0.6
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.copy(G.sub.position);
+                mesh.position.add(new THREE.Vector3(
+                  (Math.random() - 0.5) * 4,
+                  (Math.random() - 0.5) * 3,
+                  (Math.random() - 0.5) * 4
+                ));
+                mesh.userData.vx = (Math.random() - 0.5) * 20;
+                mesh.userData.vy = Math.random() * 15 - 3;
+                mesh.userData.vz = (Math.random() - 0.5) * 20;
+                mesh.userData.life = 3 + Math.random() * 3;
+                G.scene.add(mesh);
+                G._debris.push(mesh);
+              }
+              for (let i = 0; i < 6; i++) {
+                const sparkGeo = new THREE.SphereGeometry(0.1 + Math.random() * 0.15, 4, 4);
+                const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffff44 });
+                const spark = new THREE.Mesh(sparkGeo, sparkMat);
+                spark.position.copy(G.sub.position);
+                spark.userData.vx = (Math.random() - 0.5) * 30;
+                spark.userData.vy = Math.random() * 20;
+                spark.userData.vz = (Math.random() - 0.5) * 30;
+                spark.userData.life = 0.5 + Math.random() * 1;
+                G.scene.add(spark);
+                G._debris.push(spark);
+              }
+            }
+            if (G.sub) G.sub.visible = false;
+            G.camShake = 5.0;
+            G.jumpscareTimer = 1.0;
+
+            if (G.eelPhaseTimer > 0.5) {
+              G.eelPhase = 'thrash';
+              G.eelPhaseTimer = 0;
+            }
+          } else if (G.eelPhase === 'thrash') {
+            eel.rotation.z = Math.sin(G.eelPhaseTimer * 25) * 0.4;
+            eel.rotation.x = Math.sin(G.eelPhaseTimer * 18) * 0.3;
+            eel.position.y += Math.sin(G.eelPhaseTimer * 12) * dt * 8;
+            G.camShake = 6.0;
+            G.jumpscareTimer = 2.0;
+
+            if (G._debris) {
+              for (let i = G._debris.length - 1; i >= 0; i--) {
+                const d = G._debris[i];
+                d.userData.life -= dt;
+                if (d.userData.life <= 0) {
+                  G.scene.remove(d);
+                  G._debris.splice(i, 1);
+                  continue;
+                }
+                d.position.x += d.userData.vx * dt;
+                d.position.y += d.userData.vy * dt;
+                d.position.z += d.userData.vz * dt;
+                d.userData.vy -= 10 * dt;
+                d.rotation.x += dt * 3;
+                d.rotation.z += dt * 2;
+                const fade = Math.min(1, d.userData.life);
+                if (d.material.opacity !== undefined) {
+                  d.material.transparent = true;
+                  d.material.opacity = fade;
+                }
+              }
+            }
+
+            if (G.eelPhaseTimer > 2.0) {
+              G.eelPhase = 'kill';
+              G.eelPhaseTimer = 0;
+            }
+          } else if (G.eelPhase === 'kill') {
             G.ironLungState = 'eaten';
-            G.scene.remove(G.monsterEel); G.monsterEel = null;
+            G.scene.remove(eel); G.monsterEel = null;
             G.jumpscareTimer = 0;
-            G.fishing.message = 'THE BEAST CONSUMED YOUR SUBMARINE...'; G.fishing.messageTimer = 5;
           }
         }
 
-        const camT = G.sub.position.clone().add(new THREE.Vector3(0, 5, 10));
-        G.cam.position.lerp(camT, dt * 3);
-        G.cam.lookAt(G.sub.position);
+        if (G.ironLungState === 'eaten') {
+          if (kp('Enter') || kp(' ')) {
+            G.state = 'MENU';
+            G.scene.remove(G.sub); G.sub = null;
+            if (G.monsterEel) { G.scene.remove(G.monsterEel); G.monsterEel = null; }
+            if (G.skeletonTarget) { G.scene.remove(G.skeletonTarget); G.skeletonTarget = null; }
+            if (G._debris) { G._debris.forEach(d => G.scene.remove(d)); G._debris = null; }
+            G._explosionSpawned = false;
+            G.scene.background = new THREE.Color(0x87CEEB);
+            G.scene.fog = new THREE.Fog(0x9dd5ee, 200, 2000);
+            if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x0e7799);
+            setOceanMode(false);
+            if (G.oceanFloor) { G.scene.remove(G.oceanFloor); G.oceanFloor = null; }
+            G.ironLungState = 'playing';
+            G.camShake = 0;
+          }
+        }
+
+        if (G.monsterEel && (G.eelPhase === 'lunge' || G.eelPhase === 'bite' || G.eelPhase === 'thrash' || G.eelPhase === 'kill')) {
+          const lookTarget = G._explosionPos || G.sub.position;
+          const camDir = G.monsterEel.position.clone().sub(lookTarget).normalize();
+          const camT = lookTarget.clone().add(camDir.multiplyScalar(20)).add(new THREE.Vector3(0, 8, 0));
+          G.cam.position.lerp(camT, dt * 5);
+          G.cam.lookAt(lookTarget);
+        } else if (G.ironLungState === 'eaten' && G._explosionPos) {
+          const camT = G._explosionPos.clone().add(new THREE.Vector3(0, 5, G.camZoomDist));
+          G.cam.position.lerp(camT, dt * 2);
+          G.cam.lookAt(G._explosionPos);
+        } else if (G.ironLungState === 'found' && G._skeletonRewardPos) {
+          const camT = G._skeletonRewardPos.clone().add(new THREE.Vector3(0, 4, G.camZoomDist));
+          G.cam.position.lerp(camT, dt * 2);
+          G.cam.lookAt(G._skeletonRewardPos);
+        } else {
+          const camT = G.sub.position.clone().add(new THREE.Vector3(0, 5, G.camZoomDist));
+          G.cam.position.lerp(camT, dt * 3);
+          G.cam.lookAt(G.sub.position);
+        }
       }
       break;
     case 'ACHIEVEMENTS':

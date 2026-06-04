@@ -1,5 +1,7 @@
 # Lost Currents
 
+![Screenshot](public/screenshot.png)
+
 A 3D arcade racing and fishing game built with Three.js and TypeScript.
 
 ## Features
