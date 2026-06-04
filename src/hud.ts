@@ -582,10 +582,40 @@ const drawIronLung = (c, w, h) => {
   }
 
   if (G.ironLungState === 'found') {
-    c.fillStyle = 'rgba(255,0,0,0.8)';
-    c.font = 'bold 28px Orbitron, monospace';
+    const dpr = devicePixelRatio || 1;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    c.fillStyle = 'rgba(0,0,0,0.6)';
+    c.fillRect(0, 0, w, h);
+
+    const glow = 0.6 + 0.4 * Math.sin(performance.now() * 0.003);
+    c.fillStyle = `rgba(255,200,0,${glow})`;
+    c.shadowColor = '#ffcc00';
+    c.shadowBlur = 60;
+    c.font = 'bold 80px Orbitron, monospace';
     c.textAlign = 'center';
-    c.fillText('THE SKELETON IS ALIVE...', w / 2, h * 0.3);
+    c.textBaseline = 'middle';
+    c.fillText('DISCOVERY', w / 2, h * 0.25);
+    c.shadowBlur = 0;
+
+    c.fillStyle = '#ffdd44';
+    c.font = 'bold 24px Orbitron, monospace';
+    c.fillText('THE MEGALODON SKELETON', w / 2, h * 0.38);
+
+    c.fillStyle = 'rgba(255,255,255,0.8)';
+    c.font = '16px Rajdhani, sans-serif';
+    c.fillText('You found the legendary remains of an ancient Megalodon.', w / 2, h * 0.46);
+    c.fillText('A creature that once ruled these waters... now rests in the deep.', w / 2, h * 0.50);
+
+    c.fillStyle = '#44ff88';
+    c.font = 'bold 16px Orbitron, monospace';
+    c.fillText('ACHIEVEMENT UNLOCKED: Iron Lung Survivor', w / 2, h * 0.60);
+
+    c.fillStyle = 'rgba(255,255,255,' + (0.5 + 0.3 * Math.sin(performance.now() * 0.003)) + ')';
+    c.font = '14px Rajdhani, sans-serif';
+    c.fillText('Press ENTER to return to menu', w / 2, h * 0.72);
+
+    c.textBaseline = 'alphabetic';
   }
 
   if (G.monsterEel) {

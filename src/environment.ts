@@ -455,6 +455,197 @@ const mkBone = (mat) => {
   return g;
 }
 
+export const mkWhaleSkeleton = () => {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0xccccaa, roughness: 0.8 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+  const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.4, 40, 8), mat);
+  spine.rotation.z = Math.PI / 2; g.add(spine);
+
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(5, 10, 8), mat);
+  skull.scale.set(1.4, 0.8, 1.1); skull.position.x = 22; g.add(skull);
+  const jaw = new THREE.Mesh(new THREE.SphereGeometry(4, 8, 6), mat);
+  jaw.scale.set(1.2, 0.3, 1.0); jaw.position.set(23, -2.5, 0); g.add(jaw);
+  [-2, 2].forEach(z => {
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.8, 6, 4), dark);
+    s.position.set(24, 1.5, z); g.add(s);
+  });
+
+  for (let i = 0; i < 16; i++) {
+    const rib = new THREE.Mesh(new THREE.TorusGeometry(3.5 + Math.sin(i * 0.3) * 1.5, 0.2, 6, 8, Math.PI), mat);
+    rib.position.x = 15 - i * 2.5; rib.rotation.y = Math.PI / 2; g.add(rib);
+  }
+
+  for (let i = 0; i < 8; i++) {
+    const v = new THREE.Mesh(new THREE.SphereGeometry(1.0 - i * 0.1, 6, 4), mat);
+    v.position.x = -20 - i * 2.2; g.add(v);
+  }
+
+  const fluke = new THREE.Group();
+  fluke.position.x = -38;
+  [-1.5, 1.5].forEach(z => {
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(3, 8, 4), mat);
+    blade.rotation.z = Math.PI / 2;
+    blade.position.z = z;
+    fluke.add(blade);
+  });
+  g.add(fluke);
+
+  [-2, 2].forEach(z => {
+    const flipper = new THREE.Mesh(new THREE.ConeGeometry(2, 8, 4), mat);
+    flipper.rotation.x = z < 0 ? -0.3 : 0.3;
+    flipper.position.set(8, -2, z * 3);
+    g.add(flipper);
+  });
+
+  g.scale.set(1.5, 1.5, 1.5);
+  return g;
+}
+
+export const mkGiantFishSkeleton = () => {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0xbbbbaa, roughness: 0.75 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+  const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.15, 18, 6), mat);
+  spine.rotation.z = Math.PI / 2; g.add(spine);
+
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(2, 8, 6), mat);
+  skull.scale.set(1.5, 0.8, 0.9); skull.position.x = 10; g.add(skull);
+  [-1, 1].forEach(z => {
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.4, 6, 4), dark);
+    s.position.set(11.5, 0.5, z * 1.2); g.add(s);
+  });
+
+  for (let i = 0; i < 10; i++) {
+    const rib = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.1, 5, 6, Math.PI), mat);
+    rib.position.x = 6 - i * 1.5; rib.rotation.y = Math.PI / 2; g.add(rib);
+  }
+
+  const dorsal = new THREE.Mesh(new THREE.ConeGeometry(1.2, 4, 4), mat);
+  dorsal.position.set(2, 2.5, 0); g.add(dorsal);
+
+  const tailGeo = new THREE.ConeGeometry(2, 5, 4);
+  tailGeo.rotateZ(Math.PI / 2);
+  const tail = new THREE.Mesh(tailGeo, mat);
+  tail.position.x = -11; g.add(tail);
+
+  const jaw = new THREE.Mesh(new THREE.SphereGeometry(1.5, 6, 4), mat);
+  jaw.scale.set(1.3, 0.3, 0.8); jaw.position.set(10.5, -1, 0); g.add(jaw);
+
+  for (let i = 0; i < 6; i++) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.4, 4), mat);
+    tooth.position.set(12, -0.5, -0.4 + i * 0.16);
+    tooth.rotation.z = Math.PI; g.add(tooth);
+  }
+
+  g.scale.set(2, 2, 2);
+  return g;
+}
+
+export const mkKrakenTentacle = () => {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0x443333, roughness: 0.7 });
+  const suckerMat = new THREE.MeshStandardMaterial({ color: 0x665555, roughness: 0.5 });
+
+  const segments = 12;
+  for (let i = 0; i < segments; i++) {
+    const t = i / segments;
+    const r = 1.5 - t * 1.0;
+    const segGeo = new THREE.SphereGeometry(Math.max(0.4, r), 8, 6);
+    const seg = new THREE.Mesh(segGeo, mat);
+    seg.position.set(Math.sin(i * 0.6) * 2, i * 1.8, Math.cos(i * 0.5) * 1.5);
+    seg.scale.set(1, 0.6, 1);
+    g.add(seg);
+
+    if (i > 1 && i % 2 === 0) {
+      for (let s = 0; s < 3; s++) {
+        const angle = (s / 3) * Math.PI * 2;
+        const sucker = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 4, 6), suckerMat);
+        sucker.position.set(
+          seg.position.x + Math.cos(angle) * r * 0.8,
+          seg.position.y - 0.3,
+          seg.position.z + Math.sin(angle) * r * 0.8
+        );
+        sucker.rotation.x = Math.PI / 2;
+        g.add(sucker);
+      }
+    }
+  }
+
+  const tipGeo = new THREE.ConeGeometry(0.5, 3, 6);
+  const tip = new THREE.Mesh(tipGeo, mat);
+  tip.position.set(Math.sin(segments * 0.6) * 2, segments * 1.8 + 1.5, Math.cos(segments * 0.5) * 1.5);
+  g.add(tip);
+
+  g.scale.set(2, 2, 2);
+  return g;
+}
+
+export const mkShipwreck = () => {
+  const g = new THREE.Group();
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a, roughness: 0.9 });
+  const metalMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.6, metalness: 0.4 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.95 });
+
+  const hullShape = new THREE.Shape();
+  hullShape.moveTo(-8, -1.5);
+  hullShape.lineTo(6, -2);
+  hullShape.quadraticCurveTo(9, -1, 9, 0);
+  hullShape.quadraticCurveTo(9, 1, 6, 1.5);
+  hullShape.lineTo(-8, 1);
+  hullShape.lineTo(-8, -1.5);
+  const hullGeo = new THREE.ExtrudeGeometry(hullShape, { depth: 4, bevelEnabled: false });
+  hullGeo.translate(0, 0, -2);
+  const hull = new THREE.Mesh(hullGeo, woodMat);
+  hull.castShadow = true;
+  g.add(hull);
+
+  const brokenGeo = new THREE.BoxGeometry(3, 3, 4.2);
+  const broken = new THREE.Mesh(brokenGeo, darkMat);
+  broken.position.set(-2, 1.5, 0);
+  broken.rotation.set(0.1, 0.2, 0.15);
+  g.add(broken);
+
+  const mastGeo = new THREE.CylinderGeometry(0.12, 0.15, 10, 6);
+  const mast = new THREE.Mesh(mastGeo, woodMat);
+  mast.position.set(0, 5, 0);
+  mast.rotation.z = 0.4;
+  g.add(mast);
+
+  const sailGeo = new THREE.PlaneGeometry(3, 4);
+  const sailMat = new THREE.MeshStandardMaterial({ color: 0x888877, roughness: 0.9, side: THREE.DoubleSide });
+  const sail = new THREE.Mesh(sailGeo, sailMat);
+  sail.position.set(1.5, 6, 0);
+  sail.rotation.z = 0.4;
+  g.add(sail);
+
+  const cannonGeo = new THREE.CylinderGeometry(0.15, 0.18, 2.5, 6);
+  cannonGeo.rotateZ(Math.PI / 2);
+  [-1, 1].forEach(z => {
+    const cannon = new THREE.Mesh(cannonGeo, metalMat);
+    cannon.position.set(2, 0.5, z * 1.8);
+    g.add(cannon);
+  });
+
+  const anchorGeo = new THREE.CylinderGeometry(0.08, 0.15, 1.5, 4);
+  const anchor = new THREE.Mesh(anchorGeo, metalMat);
+  anchor.position.set(7, -2.5, 0);
+  anchor.rotation.z = 0.5;
+  g.add(anchor);
+
+  for (let i = 0; i < 5; i++) {
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 6), woodMat);
+    barrel.position.set(-4 + Math.random() * 6, -0.5 + Math.random(), (Math.random() - 0.5) * 3);
+    barrel.rotation.set(Math.random(), Math.random(), Math.random());
+    g.add(barrel);
+  }
+
+  g.scale.set(3, 3, 3);
+  return g;
+}
+
 export const mkMegalodonSkeleton = () => {
   const g = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0xbbbbaa, roughness: 0.8 });

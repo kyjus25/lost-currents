@@ -597,7 +597,34 @@ const update = (dt) => {
           const sd = G.sub.position.distanceTo(G.skeletonTarget.position);
           if (sd < 15) {
             G.ironLungState = 'found';
-            G.fishing.message = 'THE SKELETON... IT\'S MOVING!'; G.fishing.messageTimer = 5;
+            G._skeletonRewardPos = G.skeletonTarget.position.clone();
+            G._skeletonRewardTimer = 0;
+            G.camShake = 2.0;
+            G.audio.sfx('crash');
+            unlockAchievement('iron_lung_win');
+          }
+        }
+
+        if (G.ironLungState === 'found') {
+          G._skeletonRewardTimer = (G._skeletonRewardTimer || 0) + dt;
+          if (G.skeletonTarget) {
+            G.skeletonTarget.rotation.y += dt * 0.3;
+          }
+          if (kp('Enter') || kp(' ') || (G._skeletonRewardTimer > 15)) {
+            G.state = 'MENU';
+            G.scene.remove(G.sub); G.sub = null;
+            if (G.monsterEel) { G.scene.remove(G.monsterEel); G.monsterEel = null; }
+            if (G.skeletonTarget) { G.scene.remove(G.skeletonTarget); G.skeletonTarget = null; }
+            if (G._debris) { G._debris.forEach(d => G.scene.remove(d)); G._debris = null; }
+            G._explosionSpawned = false;
+            G._skeletonRewardPos = null;
+            G.scene.background = new THREE.Color(0x87CEEB);
+            G.scene.fog = new THREE.Fog(0x9dd5ee, 200, 2000);
+            if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x0e7799);
+            setOceanMode(false);
+            if (G.oceanFloor) { G.scene.remove(G.oceanFloor); G.oceanFloor = null; }
+            G.ironLungState = 'playing';
+            G.camShake = 0;
           }
         }
 
