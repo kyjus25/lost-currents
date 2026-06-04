@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TW, TSEG } from './shared';
 import { G } from './shared';
+import { waveHeightAt } from './water-shader';
 
 export const mkBoat = (color, accent, nozzles, finScale, hullType) => {
   nozzles = nozzles || 3;
@@ -708,12 +709,4 @@ const getTrackElevation = (t) => {
   return G.trackPts[idx].pos.y + (G.trackPts[next].pos.y - G.trackPts[idx].pos.y) * frac;
 }
 
-const waterHeightAt = (x, z) => {
-  const time = performance.now() * 0.001;
-  return Math.sin(x * 0.008 + time * 0.5) * 1.5
-    + Math.sin(z * 0.012 + time * 0.4) * 1.2
-    + Math.sin((x + z) * 0.006 + time * 0.6) * 1.0
-    + Math.sin(x * 0.025 + z * 0.02 + time * 1.3) * 0.5
-    + Math.sin(x * 0.003 + time * 0.2) * 2.0
-    - 3.0;
-}
+const waterHeightAt = waveHeightAt;

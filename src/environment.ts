@@ -1,18 +1,16 @@
 import * as THREE from 'three';
 import { TW, TSEG, WSIZE } from './shared';
 import { G } from './shared';
+import { createWaterMaterial } from './water-shader';
 
 export const buildWater = () => {
   G.waterGeo = new THREE.PlaneGeometry(WSIZE, WSIZE, 120, 120);
   G.waterGeo.rotateX(-Math.PI / 2);
-  const mat = new THREE.MeshStandardMaterial({
-    color: 0x0e7799,
-    roughness: 0.12,
-    metalness: 0.2,
-    transparent: true,
-    opacity: 0.92,
-    envMapIntensity: 0.5
-  });
+  const fogColor = G.scene.fog ? (G.scene.fog as THREE.Fog).color : new THREE.Color(0x9dd5ee);
+  const fogNear = G.scene.fog ? (G.scene.fog as THREE.Fog).near : 200;
+  const fogFar = G.scene.fog ? (G.scene.fog as THREE.Fog).far : 2000;
+  const mat = createWaterMaterial(fogColor, fogNear, fogFar);
+  G.waterMaterial = mat;
   G.waterMesh = new THREE.Mesh(G.waterGeo, mat);
   G.waterMesh.position.y = -3.0;
   G.waterMesh.receiveShadow = true;
@@ -185,19 +183,9 @@ export const buildSun = () => {
 }
 
 export const updateWater = () => {
-  const pos = G.waterGeo.attributes.position;
-  const time = performance.now() * 0.001;
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i);
-    const y = Math.sin(x * 0.008 + time * 0.5) * 1.5
-      + Math.sin(z * 0.012 + time * 0.4) * 1.2
-      + Math.sin((x + z) * 0.006 + time * 0.6) * 1.0
-      + Math.sin(x * 0.025 + z * 0.02 + time * 1.3) * 0.5
-      + Math.sin(x * 0.003 + time * 0.2) * 2.0;
-    pos.setY(i, y - 3.0);
+  if (G.waterMaterial) {
+    G.waterMaterial.uniforms.uTime.value = performance.now() * 0.001;
   }
-  pos.needsUpdate = true;
-  G.waterGeo.computeVertexNormals();
 }
 
 export const updateBoosts = (time) => {

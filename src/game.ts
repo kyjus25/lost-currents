@@ -207,6 +207,11 @@ const update = (dt) => {
           if (G.waterMesh) G.waterMesh.visible = false;
         } else {
           buildIslands();
+          if (G.physics && G.islands) {
+            G.islands.forEach((island, i) => {
+              G.physics.addIsland(String(i), island.position.x, island.position.z, island.userData.radius);
+            });
+          }
           buildOceanFloor();
           if (G.testGround) G.testGround.visible = false;
           if (G.waterMesh) G.waterMesh.visible = true;
@@ -224,7 +229,7 @@ const update = (dt) => {
         G.scene.add(G.sub);
         G.scene.background = new THREE.Color(0x330000);
         G.scene.fog = new THREE.Fog(0x330000, 5, 80);
-        if (G.waterMesh) G.waterMesh.material.color.setHex(0x880000);
+        if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x880000);
         setOceanMode(true);
         buildOceanFloor();
         G.skeletonTarget = mkMegalodonSkeleton();
@@ -263,6 +268,7 @@ const update = (dt) => {
         if (G.megalodon) { G.scene.remove(G.megalodon); G.megalodon = null; }
         if (G.giantHand) { G.scene.remove(G.giantHand); G.giantHand = null; }
         if (G.islands) { G.islands.forEach(il => G.scene.remove(il)); G.islands = []; }
+        if (G.physics) G.physics.dispose();
         if (G.oceanFloor) { G.scene.remove(G.oceanFloor); G.oceanFloor = null; }
         if (G.testGround) G.testGround.visible = false;
         if (G.waterMesh) G.waterMesh.visible = true;
@@ -434,7 +440,14 @@ const update = (dt) => {
         if (G.keys['ArrowLeft'] || G.keys['a']) G.pBoat.steer -= 1;
         if (G.keys['ArrowRight'] || G.keys['d']) G.pBoat.steer += 1;
         updatePontoonBoat(G.pBoat, dt);
-        if (G.islands) {
+        if (G.physics && G.islands) {
+          const col = G.physics.checkIslandCollision(G.pBoat.pos.x, G.pBoat.pos.z, 2.5);
+          if (col) {
+            G.pBoat.pos.x += col.nx * col.depth;
+            G.pBoat.pos.z += col.nz * col.depth;
+            G.pBoat.speed *= 0.85;
+          }
+        } else if (G.islands) {
           G.islands.forEach(island => {
             const dx = G.pBoat.pos.x - island.position.x;
             const dz = G.pBoat.pos.z - island.position.z;
@@ -545,7 +558,7 @@ const update = (dt) => {
         if (G.skeletonTarget) { G.scene.remove(G.skeletonTarget); G.skeletonTarget = null; }
         G.scene.background = new THREE.Color(0x87CEEB);
         G.scene.fog = new THREE.Fog(0x9dd5ee, 200, 2000);
-        if (G.waterMesh) G.waterMesh.material.color.setHex(0x0e7799);
+        if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x0e7799);
         setOceanMode(false);
         if (G.oceanFloor) { G.scene.remove(G.oceanFloor); G.oceanFloor = null; }
         G.jumpscareTimer = 0;
@@ -565,14 +578,15 @@ const update = (dt) => {
 
         if (kp('x') || kp('X')) {
           G.xrayActive = !G.xrayActive;
+          if (G.pp) G.pp.setXRay(G.xrayActive);
           if (G.xrayActive) {
-            G.scene.background = new THREE.Color(0x001122);
-            G.scene.fog = new THREE.Fog(0x001122, 20, 150);
-            if (G.waterMesh) G.waterMesh.material.color.setHex(0x003344);
+            G.scene.background = new THREE.Color(0x000811);
+            G.scene.fog = new THREE.Fog(0x000811, 20, 200);
+            if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x001a22);
           } else {
             G.scene.background = new THREE.Color(0x330000);
             G.scene.fog = new THREE.Fog(0x330000, 5, 80);
-            if (G.waterMesh) G.waterMesh.material.color.setHex(0x880000);
+            if (G.waterMaterial) G.waterMaterial.uniforms.uColor.value.setHex(0x880000);
           }
         }
 

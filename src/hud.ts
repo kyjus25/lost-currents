@@ -31,9 +31,9 @@ const drawMenu = (c, w, h) => {
   c.fillStyle = '#ffffff';
   c.font = 'bold 56px Orbitron, monospace';
   c.textAlign = 'center';
-  c.fillText('HYDRO', w / 2, h * 0.22);
+  c.fillText('LOST', w / 2, h * 0.22);
   c.font = 'bold 76px Orbitron, monospace';
-  c.fillText('THUNDER', w / 2, h * 0.32);
+  c.fillText('CURRENTS', w / 2, h * 0.32);
   c.shadowBlur = 0;
   c.fillStyle = 'rgba(255,255,255,0.3)';
   c.font = '14px Rajdhani, sans-serif';
@@ -630,13 +630,10 @@ const drawIronLung = (c, w, h) => {
   }
 
   if (G.xrayActive) {
-    c.fillStyle = 'rgba(0,255,100,0.1)';
-    c.fillRect(0, 0, w, h);
-    c.strokeStyle = 'rgba(0,255,100,0.05)';
-    c.lineWidth = 1;
-    for (let y = 0; y < h; y += 3) {
-      c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke();
-    }
+    c.fillStyle = 'rgba(255,255,255,0.7)';
+    c.font = 'bold 10px Orbitron, monospace';
+    c.textAlign = 'left';
+    c.fillText('X-RAY ACTIVE', 20, 105);
   }
 
   c.fillStyle = 'rgba(255,255,255,0.3)';
